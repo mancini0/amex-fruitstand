@@ -5,7 +5,7 @@ import com.amex.fruitstand.price.PriceService
 class OrderServiceImpl(private val priceService: PriceService) : OrderService {
     companion object {
         const val INVALID_ORDER_ERROR_MSG = "Invalid order format. The order input string must be of the form o:a, \n" +
-                "where both a and b are positive integers less than or equal to ${Integer.MAX_VALUE},\n" +
+                "where both o and a are positive integers less than or equal to ${Integer.MAX_VALUE},\n" +
                 "with o representing the number of oranges you wish to purchase, and a representing the \n" +
                 "number of apples you wish to purchase."
     }
