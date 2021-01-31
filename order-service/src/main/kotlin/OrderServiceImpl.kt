@@ -1,8 +1,10 @@
 package com.amex.fruitstand.order
 
+import com.amex.fruitstand.discount.DiscountService
 import com.amex.fruitstand.price.PriceService
 
-class OrderServiceImpl(private val priceService: PriceService) : OrderService {
+class OrderServiceImpl(private val priceService: PriceService,
+                       private val discountService: DiscountService) : OrderService {
     companion object {
         const val INVALID_ORDER_ERROR_MSG = "Invalid order format. The order input string must be of the form o:a, \n" +
                 "where both o and a are positive integers less than or equal to ${Integer.MAX_VALUE},\n" +
@@ -20,9 +22,11 @@ class OrderServiceImpl(private val priceService: PriceService) : OrderService {
                     .filter { qty -> qty >= 0 }
                     .zipWithNext()
                     .ifEmpty { return OrderSubmissionResult(orderPrice = null, errorMessage = INVALID_ORDER_ERROR_MSG) }
-                    .map { (oranges, apples) ->
-                        OrderSubmissionResult(((oranges * priceService.getOrangeUnitPrice()) +
-                                (apples * priceService.getAppleUnitPrice())).toBigInteger(), null)
+                    .map { (oranges, apples) -> discountService.applyDiscount(oranges, apples) }
+                    .map { discountResult ->
+                        OrderSubmissionResult(((discountResult.effectiveOrangeQty * priceService.getOrangeUnitPrice()) +
+                                (discountResult.effectiveAppleQty * priceService.getAppleUnitPrice())).toBigInteger(),
+                                null)
                     }
                     .single()
         } catch (e: NumberFormatException) {

@@ -1,5 +1,7 @@
 package com.amex.fruitstand.order
 
+import com.amex.fruitstand.discount.DiscountResult
+import com.amex.fruitstand.discount.DiscountService
 import com.amex.fruitstand.price.PriceService
 import com.google.common.truth.Truth.assertThat
 import org.junit.Ignore
@@ -29,7 +31,15 @@ class OrderServiceImplTest {
         }
     }
 
-    private val orderService = OrderServiceImpl(priceService)
+    /** a 'discount service' implementation that gives 0% off, to preserve existing test assertions
+     * that existed before the discount requirement was added to the problem statement.
+     *  **/
+    private val noDiscountService = object : DiscountService {
+        override fun applyDiscount(orangeQty: Int, appleQty: Int): DiscountResult {
+            return DiscountResult(effectiveOrangeQty = orangeQty, effectiveAppleQty = appleQty)
+        }
+    }
+    private val orderService = OrderServiceImpl(priceService, noDiscountService)
 
     private val expectedResultIfInputInvalid = OrderSubmissionResult(orderPrice = null,
             errorMessage = OrderServiceImpl.INVALID_ORDER_ERROR_MSG)
@@ -127,7 +137,7 @@ class OrderServiceImplTest {
      */
     @Test
     @Ignore("interesting (ignored) test case exceeds the limit of BigInteger on 64 bit architectures, might be " +
-            "a relevant test case someday in the future with technological advances")
+            "a relevant test case someday in the future with technological advances lol")
     fun longOverflowIsHandled() {
         val orangeQty = Integer.MAX_VALUE
         val appleQty = Integer.MAX_VALUE
@@ -135,7 +145,7 @@ class OrderServiceImplTest {
             override fun getAppleUnitPrice() = Integer.MAX_VALUE
             override fun getOrangeUnitPrice() = Integer.MAX_VALUE
         }
-        val expensiveOrderService = OrderServiceImpl(maxPriceService);
+        val expensiveOrderService = OrderServiceImpl(maxPriceService, noDiscountService);
         assertThat(
                 OrderSubmissionResult(BigInteger.valueOf(2).times((
                         BigInteger.valueOf(Integer.MAX_VALUE.toLong())

@@ -8,21 +8,29 @@ kt_jvm_library(
         "src/main/kotlin/OrderService.kt",
         "src/main/kotlin/OrderServiceImpl.kt",
     ],
-    deps = ["//price-service"],
+    deps = [
+        "//discount-service",
+        "//price-service",
+    ],
 )
 
 kt_jvm_binary(
     name = "order-entry-cli",
     srcs = ["src/main/kotlin/OrderEntryCli.kt"],
     main_class = "com.amex.fruitstand.order.OrderEntryCliKt",
-    deps = [":order-service","//price-service:price-service-impl"],
+    deps = [
+        ":order-service",
+        "//price-service:price-service-impl",
+    ],
 )
 
 kt_jvm_test(
     name = "order-service-test",
+    srcs = ["src/test/kotlin/OrderServiceImplTest.kt"],
     test_class = "com.amex.fruitstand.order.OrderServiceImplTest",
-    srcs =["src/test/kotlin/OrderServiceImplTest.kt"],
-    deps = ["@maven//:junit_junit",
-            "@maven//:com_google_truth_truth",
-            ":order-service"],
+    deps = [
+        ":order-service",
+        "@maven//:com_google_truth_truth",
+        "@maven//:junit_junit",
+    ],
 )
