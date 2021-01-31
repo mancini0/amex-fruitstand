@@ -1,7 +1,8 @@
 package com.amex.fruitstand.discount
 
-class DiscountServiceImpl(val orangeDiscounters: List<(Int) -> Int>,
-                          val appleDiscounters: List<(Int) -> Int>) : DiscountService {
+class DiscountServiceImpl(private val orangeDiscounters: List<(Int) -> Int>,
+                          private val appleDiscounters: List<(Int) -> Int>,
+                          val availableDiscounts: String) : DiscountService {
 
     companion object CommonDiscounts {
         /**a function that returns a function which calculates the effective quantity
@@ -23,6 +24,10 @@ class DiscountServiceImpl(val orangeDiscounters: List<(Int) -> Int>,
     override fun applyDiscount(orangeQty: Int, appleQty: Int): DiscountResult {
         return DiscountResult(effectiveOrangeQty = orangeDiscounters.map { it(orangeQty) }.minOf { it },
                 effectiveAppleQty = appleDiscounters.map { it(appleQty) }.minOf { it })
+    }
+
+    override fun availableDiscounts(): String {
+        return availableDiscounts
     }
 
 }

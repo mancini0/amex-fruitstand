@@ -8,4 +8,7 @@ interface DiscountService {
      * apples that were not given away for free (the 'effective quantity'), after applying discounts.
      */
     fun applyDiscount(orangeQty: Int, appleQty: Int): DiscountResult
+
+    /** returns a string describing the current available discounts**/
+    fun availableDiscounts(): String
 }

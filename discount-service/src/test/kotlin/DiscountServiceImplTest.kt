@@ -9,7 +9,8 @@ class DiscountServiceImplTest {
 
     val discountService: DiscountService =
             DiscountServiceImpl(orangeDiscounters = listOf(DiscountServiceImpl.xForPriceOfY(3, 2)),
-                    appleDiscounters = listOf(DiscountServiceImpl.xForPriceOfY(2, 1)))
+                    appleDiscounters = listOf(DiscountServiceImpl.xForPriceOfY(2, 1)),
+                    availableDiscounts = "oranges are 3 for 2, apples are buy 1 get 1 free")
 
 
     @Test
@@ -50,7 +51,8 @@ class DiscountServiceImplTest {
     fun applyMostPowerfulDiscountWhenMultipleAvailable() {
         val discountServiceMultiple = DiscountServiceImpl(orangeDiscounters =
         listOf(DiscountServiceImpl.xForPriceOfY(4, 1), DiscountServiceImpl.xForPriceOfY(6, 2)),
-                appleDiscounters = listOf(DiscountServiceImpl.xForPriceOfY(2, 1)))
+                appleDiscounters = listOf(DiscountServiceImpl.xForPriceOfY(2, 1)),
+                availableDiscounts = "oranges are 6 for 2 or 4 for 1, apples are 2 for 1")
 
         // 12 oranges @ 4 for 1 = 3 effective qty
         // 12 oranges @ 6 for 2 = 4 effective qty, so the service should apply the 4 for 1 discount.
