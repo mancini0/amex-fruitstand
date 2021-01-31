@@ -38,6 +38,10 @@ class OrderServiceImplTest {
         override fun applyDiscount(orangeQty: Int, appleQty: Int): DiscountResult {
             return DiscountResult(effectiveOrangeQty = orangeQty, effectiveAppleQty = appleQty)
         }
+
+        override fun availableDiscounts(): String {
+            return "no discounts currently available"
+        }
     }
     private val orderService = OrderServiceImpl(priceService, noDiscountService)
 
