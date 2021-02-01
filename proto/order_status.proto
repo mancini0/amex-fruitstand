@@ -1,0 +1,29 @@
+syntax = "proto3";
+package com.amex.fruitstand.proto;
+option java_package = "com.amex.fruitstand.proto";
+
+message Order {
+  string order_id = 1;
+  uint32 orange_qty = 2;
+  uint32 apple_qty = 3;
+  uint32 cost = 4;
+  enum Status {
+    UNKNOWN = 0;
+    OPEN = 1;
+    REJECTED_PAYMENT_FAILED = 2;
+    REJECTED_OUT_OF_STOCK = 3;
+    FILLED = 4;
+  }
+  Status order_status = 5;
+  string user_id = 6;
+}
+
+message StreamOrderEventsRequest {
+
+  string user_id = 1;
+}
+
+
+service OrderStatus {
+  rpc StreamOrderEvents (StreamOrderEventsRequest) returns (stream Order);
+}

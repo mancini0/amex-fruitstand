@@ -1,0 +1,25 @@
+syntax = "proto3";
+package com.amex.fruitstand.proto;
+option java_package = "com.amex.fruitstand.proto";
+
+message ProcessPaymentRequest {
+  string customer_id = 1;
+  string card_number = 2;
+  uint32 amount = 3;
+  string order_id = 4;
+}
+
+message ProcessPaymentResult {
+  enum PaymentStatus {
+    PAYMENT_STATUS_UNDEFINED = 0;
+    PAYED_IN_FULL = 1;
+    PAYMENT_DECLINED = 2;
+  }
+  string order_id = 1;
+  PaymentStatus payment_status = 2;
+}
+
+
+service Cashier {
+  rpc ProcessPayment (ProcessPaymentRequest) returns (ProcessPaymentResult);
+}
