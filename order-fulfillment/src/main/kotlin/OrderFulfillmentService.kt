@@ -32,11 +32,11 @@ open class OrderFulfillmentService(private val orderConsumer: Consumer<String, B
 
     fun subscribeToOrderEvents(): Job {
         val job = GlobalScope.launch {
-            log.debug("subscribing to orders topic...")
+            log.info("subscribing to orders topic...")
             orderConsumer.subscribe(listOf("orders"))
             while (true) {
                 for (orderMessage in orderConsumer.poll(Duration.ofMillis(3500))) {
-                    log.debug("received order message with key= {}", orderMessage.key())
+                    log.info("received order message with key= {}", orderMessage.key())
                     fulfillOrder(Order.parseFrom(orderMessage.value()))
                 }
             }
@@ -56,12 +56,14 @@ open class OrderFulfillmentService(private val orderConsumer: Consumer<String, B
         } else {
             //items are in stock
             orderStatusBuilder.setOrderStatus(Order.Status.FILLED)
+            log.info("after fulfillment, our remaining orange inventory: {}," +
+                    "remaining apple inventory: {}", orangeInventory.get(), appleInventory.get())
         }
         val payload = orderStatusBuilder.build().toByteArray()
         orderStatusProducer.send(ProducerRecord<String, ByteArray>("order-status", order.userId, payload),
                 Callback({ recordMetadata, exception ->
                     exception?.let { log.warn("error sending order status", it) }
-                            ?: log.debug("send was succesful: ${recordMetadata}")
+                            ?: log.info("send to order-status topic was succesful (offset: ${recordMetadata.offset()})")
                 }))
 
     }

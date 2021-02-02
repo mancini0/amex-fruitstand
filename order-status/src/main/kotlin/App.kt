@@ -20,8 +20,11 @@ fun main() {
     val orderEventConsumer: KafkaConsumer<String, ByteArray> = KafkaConsumer(consumerProps)
     val orderStatusService = OrderStatusServiceImpl(orderEventConsumer, subscriberMap)
     orderStatusService.beginOrderEventKafkaSubscription()
-    ServerBuilder.forPort(9305)
+    println("starting grpc server...")
+    ServerBuilder
+            .forPort(9309)
             .addService(orderStatusService)
             .build()
+            .start()
             .awaitTermination()
 }

@@ -31,7 +31,7 @@ class OrderStatusServiceImplTest {
                     .setUserId("mike")
                     .setAppleQty(3).setOrangeQty(1).setCost(175).build()
             assertThat(subscribers.containsKey("mike")).isTrue()
-            mockConsumer.addRecord(ConsumerRecord("order-events", 0, 0L, "mike", order.toByteArray()))
+            mockConsumer.addRecord(ConsumerRecord("order-status", 0, 0L, "mike", order.toByteArray()))
             assertThat(flow.single()).isEqualTo(order)
             job.cancel()
         }

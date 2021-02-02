@@ -3,10 +3,14 @@ package com.amex.fruitstand.order
 import com.amex.fruitstand.discount.DiscountResult
 import com.amex.fruitstand.discount.DiscountService
 import com.amex.fruitstand.price.PriceService
+import com.amex.fruitstand.proto.OrderStatusOuterClass.Order
 import com.google.common.truth.Truth.assertThat
+import org.apache.kafka.clients.producer.MockProducer
+import org.apache.kafka.common.serialization.ByteArraySerializer
+import org.apache.kafka.common.serialization.StringSerializer
 import org.junit.Ignore
 import org.junit.Test
-import java.math.BigInteger
+import java.lang.RuntimeException
 
 
 /** This class could be written much more concisely using JUnit5's "parameterized test" (since
@@ -43,7 +47,12 @@ class OrderServiceImplTest {
             return "no discounts currently available"
         }
     }
-    private val orderService = OrderServiceImpl(priceService, noDiscountService)
+
+    private val mockProducer = MockProducer(true, StringSerializer(),
+            ByteArraySerializer())
+
+
+    private val orderService = OrderServiceImpl(priceService, noDiscountService, mockProducer)
 
     private val expectedResultIfInputInvalid = OrderSubmissionResult(orderPrice = null,
             errorMessage = OrderServiceImpl.INVALID_ORDER_ERROR_MSG)
@@ -103,8 +112,8 @@ class OrderServiceImplTest {
     fun validOrangeValidApple() {
         val orangeQty = 3;
         val appleQty = 2;
-        val expectedPrice = (orangeQty * priceService.getOrangeUnitPrice()).toBigInteger().plus(
-                (appleQty * priceService.getAppleUnitPrice()).toBigInteger())
+        val expectedPrice = (orangeQty * priceService.getOrangeUnitPrice()) + (
+                (appleQty * priceService.getAppleUnitPrice()))
 
         assertThat(OrderSubmissionResult(orderPrice = expectedPrice, null))
                 .isEqualTo(orderService.processOrder("${orangeQty}:${appleQty}"))
@@ -114,8 +123,8 @@ class OrderServiceImplTest {
     fun zeroOrangeValidApple() {
         val orangeQty = 0;
         val appleQty = 2;
-        val expectedPrice = (orangeQty * priceService.getOrangeUnitPrice()).toBigInteger().plus(
-                (appleQty * priceService.getAppleUnitPrice()).toBigInteger())
+        val expectedPrice = (orangeQty * priceService.getOrangeUnitPrice()) + (
+                (appleQty * priceService.getAppleUnitPrice()))
 
         assertThat(OrderSubmissionResult(orderPrice = expectedPrice, null)).isEqualTo(
                 orderService.processOrder("${orangeQty}:${appleQty}"))
@@ -125,36 +134,39 @@ class OrderServiceImplTest {
     fun validOrangeZeroApple() {
         val orangeQty = 2;
         val appleQty = 0;
-        val expectedPrice = (orangeQty * priceService.getOrangeUnitPrice()).toBigInteger().plus(
-                (appleQty * priceService.getAppleUnitPrice()).toBigInteger())
+        val expectedPrice = (orangeQty * priceService.getOrangeUnitPrice()) + (
+                (appleQty * priceService.getAppleUnitPrice()))
 
         assertThat(OrderSubmissionResult(orderPrice = expectedPrice, null)).isEqualTo(
                 orderService.processOrder("${orangeQty}:${appleQty}"))
     }
 
-    /*
-     *  explore behavior at the "extremes" of "valid" arguments.
-     *  If we order the maximum # of apples AND the maximum # of oranges
-     *  each at the maximum price, the answer should be 2*MAX_INT*MAX_INT and should not overflow
-     * the orderPrice field of the OrderSubmissionResult. This test case indicates the service should
-     * be refactored to restrict the max order size and max price to more reasonable values.
-     */
     @Test
-    @Ignore("interesting (ignored) test case exceeds the limit of BigInteger on 64 bit architectures, might be " +
-            "a relevant test case someday in the future with technological advances lol")
-    fun longOverflowIsHandled() {
-        val orangeQty = Integer.MAX_VALUE
-        val appleQty = Integer.MAX_VALUE
-        val maxPriceService = object : PriceService {
-            override fun getAppleUnitPrice() = Integer.MAX_VALUE
-            override fun getOrangeUnitPrice() = Integer.MAX_VALUE
-        }
-        val expensiveOrderService = OrderServiceImpl(maxPriceService, noDiscountService);
-        assertThat(
-                OrderSubmissionResult(BigInteger.valueOf(2).times((
-                        BigInteger.valueOf(Integer.MAX_VALUE.toLong())
-                                .times(BigInteger.valueOf(Integer.MAX_VALUE.toLong())))),
-                        errorMessage = null)).isEqualTo(expensiveOrderService.processOrder("${orangeQty}:${appleQty}"))
+    fun validOrdersProduceKafkaMessages() {
+        val orangeQty = 2;
+        val appleQty = 1;
+        val expectedPrice = (orangeQty * priceService.getOrangeUnitPrice()) + (
+                (appleQty * priceService.getAppleUnitPrice()))
+
+        assertThat(OrderSubmissionResult(orderPrice = expectedPrice, null)).isEqualTo(
+                orderService.processOrder("${orangeQty}:${appleQty}"))
+
+        val producerRecord = mockProducer.history()[0];
+        assertThat(mockProducer.history()).hasSize(1)
+        val order = Order.parseFrom(producerRecord.value())
+        assertThat(order.appleQty).isEqualTo(1)
+        assertThat(order.orangeQty).isEqualTo(2);
+        assertThat(order.userId).isEqualTo("happy-customer")
     }
+
+    @Test
+    @Ignore
+    fun handleKafkaExceptionGracefully() {
+        mockProducer.errorNext(RuntimeException("boom"))
+        assertThat(orderService.processOrder("2:1")).isEqualTo(
+                OrderSubmissionResult(orderPrice = null, errorMessage = OrderServiceImpl.FULFILLMENT_UNREACHABLE))
+
+    }
+
 
 }

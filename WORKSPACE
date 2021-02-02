@@ -43,6 +43,7 @@ maven_install(
         "org.jetbrains.kotlinx:kotlinx-coroutines-core:jar:1.4.2",
         "org.slf4j:slf4j-api:1.7.25",
         "ch.qos.logback:logback-classic:1.2.3",
+        "io.grpc:grpc-netty:1.35.0",
     ] + IO_GRPC_GRPC_KOTLIN_ARTIFACTS,
     repositories = [
         "https://jcenter.bintray.com/",

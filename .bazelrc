@@ -1,0 +1,2 @@
+build --jobs 1 --local_cpu_resources 1
+test --jobs 1 --local_cpu_resources 1 --test_output=all

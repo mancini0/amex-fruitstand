@@ -1,13 +1,14 @@
 package com.amex.fruitstand.fulfillment
 
 import com.amex.fruitstand.proto.OrderStatusOuterClass.Order
+import kotlinx.coroutines.runBlocking
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.KafkaProducer
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicInteger
 
-fun main() {
+fun main() = runBlocking {
     val consumerProps = Properties()
     val producerProps = Properties()
     val bootstrapServers = System.getenv("bootstrap.servers") ?: "localhost:9092";
@@ -30,11 +31,13 @@ fun main() {
             AtomicInteger(20), AtomicInteger(20))
 
     val orderSubscription = fulfillmentService.subscribeToOrderEvents()
-
+    
     Runtime.getRuntime().addShutdownHook(object : Thread() {
         override fun run() {
             orderSubscription.cancel()
         }
     })
+
+    orderSubscription.join()
 
 }

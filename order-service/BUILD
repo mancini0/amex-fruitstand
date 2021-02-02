@@ -11,6 +11,9 @@ kt_jvm_library(
     deps = [
         "//discount-service",
         "//price-service",
+        "//proto:order_status_java_proto",
+        "@maven//:org_apache_kafka_kafka_clients",
+        "@maven//:org_slf4j_slf4j_api",
     ],
 )
 
@@ -30,6 +33,7 @@ kt_jvm_test(
     test_class = "com.amex.fruitstand.order.OrderServiceImplTest",
     deps = [
         ":order-service",
+        "@maven//:ch_qos_logback_logback_classic",
         "@maven//:com_google_truth_truth",
         "@maven//:junit_junit",
     ],
