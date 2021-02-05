@@ -7,11 +7,9 @@ replace the `bazelisk` commands below with `bazel`.)
 ![Alt text](screenshot2.png?raw=true "order-entry-cli")
 ![Alt text](screenshot3.png?raw=true "fulfillment-service")
 ![Alt text](screenshot4.png?raw=true "order-status-grpc-listener")
+
 ####to run the various services:
-`./bazelisk-linux-amd64 run --javabase=@bazel_tools//tools/jdk:remote_jdk11  --java_runtime_version=remotejdk_11 //order-service:order-entry-cli` (linux)
 
-
-`BAZEL_VERSION=4.0.0 ./bazelisk-darwin-amd64 run --java_runtime_version=remotejdk_11 --javabase=@bazel_tools//tools/jdk:remote_jdk11  //order-service:order-entry-cli` (mac)
 
 `confluent local start kafka`
 
@@ -28,5 +26,11 @@ replace the `bazelisk` commands below with `bazel`.)
 `bazel run //order-status:order-status-console-grpc-client (in a seperate terminal)'`
 
 
-<p>(replace 'bazel run' with 'bazelisk-linux-amd64 run --javabase=@bazel_tools//tools/jdk:remote_jdk11  --java_runtime_version=remotejdk_11' for linux or 
-BAZEL_VERSION=4.0.0 ./bazelisk-darwin-amd64 run --java_runtime_version=remotejdk_11 --javabase=@bazel_tools//tools/jdk:remote_jdk11 if you are on mac)</p>
+######Note, if you do not have Bazel or a JRE installed, you can use the bazelisk binary commited to this repo:
+
+##### on mac, replace bazel with :
+`./bazelisk-darwin-amd64 run --java_runtime_version=remotejdk_11 --javabase=@bazel_tools//tools/jdk:remote_jdk11
+`
+
+##### on linux, replace bazel with:
+`bazelisk-linux-amd64 run --javabase=@bazel_tools//tools/jdk:remote_jdk11 --java_runtime_version=remotejdk_11`
